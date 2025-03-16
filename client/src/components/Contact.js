@@ -7,8 +7,11 @@ const Contact = ({ onDiveDeeper }) => {
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState('');
 
-  // API URL is just a relative path in production
-  const API_URL = '/api/contact';
+  // Determine the API URL based on the current environment
+  const isProd = window.location.hostname !== 'localhost';
+  const API_URL = isProd 
+    ? `https://${window.location.hostname}/api/contact`  // Use the current domain in production
+    : 'http://localhost:5000/api/contact';  // Use direct server URL in development
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +19,8 @@ const Contact = ({ onDiveDeeper }) => {
     setStatus('');
 
     try {
+      console.log(`Sending request to: ${API_URL}`);
+      
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -24,13 +29,19 @@ const Contact = ({ onDiveDeeper }) => {
         body: JSON.stringify({ email, message }),
       });
 
+      console.log('Response status:', response.status);
+      
       let data;
-      // Try to parse response as JSON, but don't crash if it's not valid JSON
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+      
       try {
-        data = await response.json();
-      } catch (error) {
-        console.error('Error parsing response as JSON:', error);
-        throw new Error('Server returned an invalid response');
+        // Only parse as JSON if it's actually JSON
+        if (responseText && responseText.trim().startsWith('{')) {
+          data = JSON.parse(responseText);
+        }
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
       }
 
       if (response.ok) {
@@ -38,7 +49,7 @@ const Contact = ({ onDiveDeeper }) => {
         setEmail('');
         setMessage('');
       } else {
-        setStatus(`Error: ${data?.error || 'Failed to send message'}`);
+        setStatus(`Error: ${data?.error || response.statusText || 'Failed to send message'}`);
       }
     } catch (err) {
       console.error('Contact form error:', err);

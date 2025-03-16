@@ -8,30 +8,13 @@ dotenv.config();
 
 const app = express();
 
-// More flexible CORS setup for Render deployment
+// Much more permissive CORS configuration for production
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow all origins in development and requests with no origin (like curl)
-    if (process.env.NODE_ENV !== 'production' || !origin) {
-      return callback(null, true);
-    }
-    
-    // In production, check against allowlist OR match render.com domains
-    const allowlist = [
-      'https://anubhav-portfolio.onrender.com',  // Update with your actual Render domain
-      'http://localhost:3000',
-      'https://www.anubhav-qt.tech',
-      'https://anubhav-qt.tech'
-    ];
-    
-    // Allow any render.com subdomain
-    if (origin.includes('render.com') || allowlist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS policy: Origin not allowed'), false);
-    }
+    // Allow all origins in development and requests with no origin
+    callback(null, true);
   },
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
 }));
 
