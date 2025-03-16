@@ -8,18 +8,26 @@ dotenv.config();
 
 const app = express();
 
-// In production, allow only specific origins or the Render domain
-const allowedOrigins = ['https://your-render-app-name.onrender.com', 'http://localhost:3000'];
-
+// More flexible CORS setup for Render deployment
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+  origin: function (origin, callback) {
+    // Allow all origins in development and requests with no origin (like curl)
+    if (process.env.NODE_ENV !== 'production' || !origin) {
+      return callback(null, true);
     }
-    return callback(null, true);
+    
+    // In production, check against allowlist OR match render.com domains
+    const allowlist = [
+      'https://anubhav-portfolio.onrender.com',  // Update with your actual Render domain
+      'http://localhost:3000'
+    ];
+    
+    // Allow any render.com subdomain
+    if (origin.includes('render.com') || allowlist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy: Origin not allowed'), false);
+    }
   },
   methods: ['GET', 'POST'],
   credentials: true
@@ -29,7 +37,7 @@ app.use(express.json());
 
 // Log incoming requests
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  console.log(`${req.method} ${req.url} from origin: ${req.headers.origin || 'unknown'}`);
   next();
 });
 
