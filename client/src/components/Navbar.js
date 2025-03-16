@@ -33,18 +33,23 @@ const Navbar = () => {
 
   // Handle link click - smooth scroll to section
   const handleLinkClick = (id) => {
+    // Use setTimeout to ensure the menu closes visually first before scrolling
+    // This prevents the "double tap" issue on mobile
     setIsOpen(false);
     
-    if (id === '') {
-      // Scroll to top for home
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-    
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Small timeout to allow the UI to update before scrolling
+    setTimeout(() => {
+      if (id === '') {
+        // Scroll to top for home
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 10);
   };
 
   return (
@@ -120,12 +125,18 @@ const Navbar = () => {
           <ul className="flex flex-col space-y-4">
             {navLinks.map((link) => (
               <li key={link.id}>
-                <button
-                  className="text-white hover:text-gray-300 transition-colors w-full text-left py-2 text-sm uppercase tracking-wider"
+                {/* Change from button to anchor-like div for better mobile touch behavior */}
+                <div
+                  className="text-white hover:text-gray-300 transition-colors w-full text-left py-2 text-sm uppercase tracking-wider cursor-pointer"
                   onClick={() => handleLinkClick(link.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') handleLinkClick(link.id);
+                  }}
                 >
                   {link.title}
-                </button>
+                </div>
               </li>
             ))}
           </ul>

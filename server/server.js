@@ -19,7 +19,9 @@ app.use(cors({
     // In production, check against allowlist OR match render.com domains
     const allowlist = [
       'https://anubhav-portfolio.onrender.com',  // Update with your actual Render domain
-      'http://localhost:3000'
+      'http://localhost:3000',
+      'https://www.anubhav-qt.tech',
+      'https://anubhav-qt.tech'
     ];
     
     // Allow any render.com subdomain
