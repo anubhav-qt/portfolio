@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: 'Courier New', Courier, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  background-color: black;
+  color: white;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ffffff;
+}
+
+/* Terminal styles */
+.terminal {
+  font-family: 'Courier New', Courier, monospace;
+  color: #00ff00;
+  background-color: #000000;
+}
+
+.terminal-prompt::before {
+  content: '$ ';
+  color: #00ff00;
+}
+
+.ladder {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: transparent;
+}
+
+.ladder-rung {
+  width: 40px;
+  height: 5px;
+  margin: 15px 0;
+}

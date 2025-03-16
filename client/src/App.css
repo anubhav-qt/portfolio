@@ -1,0 +1,167 @@
+/* Static effect for terminal transition */
+.static-effect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.static-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  animation: staticMove 0.2s infinite linear;
+  opacity: 0.5;
+}
+
+@keyframes staticMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 -100px;
+  }
+}
+
+/* Terminal styling */
+.terminal-container {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #000;
+  color: #00ff00;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Navbar styles */
+nav {
+  transition: background-color 0.3s ease;
+}
+
+/* Prevent content from being hidden behind navbar */
+#experience, #projects, #tech-stack, #contact {
+  scroll-margin-top: 80px; /* Adjust based on navbar height */
+}
+
+/* Content sections scroll styling */
+.content {
+  position: relative;
+  z-index: 10;
+}
+
+/* Custom cursor for terminal */
+.terminal {
+  cursor: text;
+}
+
+/* Make the Dive Deeper button stand out */
+.dive-deeper-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.dive-deeper-btn:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left 0.5s ease;
+}
+
+.dive-deeper-btn:hover:after {
+  left: 100%;
+}
+
+/* Improved vertical line styling - remove horizontal rungs */
+.ladder {
+  display: none; /* Hide the ladder with horizontal rungs */
+}
+
+/* Section divider line styles - only visible on medium screens and up */
+.section-divider {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  width: 2px;
+  background-color: white;
+  z-index: 5;
+}
+
+@media (max-width: 768px) {
+  .terminal-container {
+    padding: 0.5rem;
+  }
+  
+  .terminal {
+    padding: 0.5rem;
+  }
+  
+  .experience-item, .project-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  [class*="text-ascii"] {
+    font-size: 0.5rem !important;
+    line-height: 0.8;
+  }
+}
+
+@media (max-height: 700px) {
+  section.min-h-screen {
+    min-height: 95vh;
+  }
+}
+
+@media (min-width: 769px) {
+  [class*="md:mr-auto"], [class*="md:ml-auto"] {
+    width: 45% !important;
+  }
+  
+  [class*="md:text-right"] {
+    text-align: right !important;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+@keyframes rgbShift {
+  0% { color: #ff0000; } 
+  16.6% { color: #ff00ff; }
+  33.3% { color: #0000ff; }
+  50% { color: #00ffff; }
+  66.6% { color: #00ff00; }
+  83.3% { color: #ffff00; } 
+  100% { color: #ff0000; }
+}
+
+.rgb-text {
+  animation: rgbShift 10s linear infinite;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
