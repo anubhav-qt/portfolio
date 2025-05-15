@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const experiences = [
   {
-    title: "AI Engineer",
+    title: "AI Engineer Intern",
     company: "Blinkadz",
     period: "Jan 2025 - April 2025",
     description: "Delivered core features with Next.js, built a FastAPI/Firebase microservice increasing pipeline throughput by 45%, automated LinkedIn campaign workflows via Marketing API reducing setup time by 85%, and developed Playwright tests improving coverage to 90%. Created a 12-agent orchestration system with Google ADK, cutting video-ad creation time by 95%.",

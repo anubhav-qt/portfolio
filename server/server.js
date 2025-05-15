@@ -6,6 +6,14 @@ const dotenv = require('dotenv');
 // Initialize dotenv
 dotenv.config();
 
+// Debug logs for environment variables
+console.log('Environment variables loaded. NODE_ENV:', process.env.NODE_ENV);
+console.log('GEMINI_API_KEY available:', !!process.env.GEMINI_API_KEY);
+if (process.env.GEMINI_API_KEY) {
+  const key = process.env.GEMINI_API_KEY;
+  console.log('API key format check:', `${key.substring(0, 5)}...${key.substring(key.length - 5)}, length: ${key.length}`);
+}
+
 const app = express();
 
 // Much more permissive CORS configuration for production
@@ -29,9 +37,10 @@ app.use((req, res, next) => {
 // API routes
 try {
   app.use('/api/contact', require('./routes/api/contact'));
-  console.log('Contact routes loaded successfully');
+  app.use('/api/chat', require('./routes/api/chat'));
+  console.log('API routes loaded successfully');
 } catch (error) {
-  console.error('Failed to load contact routes:', error);
+  console.error('Failed to load API routes:', error);
 }
 
 // Test endpoint

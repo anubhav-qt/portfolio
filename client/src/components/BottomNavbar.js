@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaInfoCircle, FaFileAlt } from 'react-icons/fa';
+import { FaInfoCircle, FaFileAlt, FaEnvelope } from 'react-icons/fa';
 import { IoSparkles } from 'react-icons/io5';
 import { RiTerminalBoxFill } from 'react-icons/ri';
 
-const BottomNavbar = ({ onDiveDeeper }) => {
+const BottomNavbar = ({ onDiveDeeper, onChatToggle }) => {
   const [showModal, setShowModal] = useState(false);
 
   // Smooth scroll to section
@@ -42,14 +42,17 @@ const BottomNavbar = ({ onDiveDeeper }) => {
               onClick={() => scrollToSection('experience')}
               className="text-white hover:text-blue-400 transition-colors duration-300 p-2"
               aria-label="Information"
+              title="About Me"
             >
               <FaInfoCircle className="text-xl sm:text-2xl" />
             </button>
             
-            {/* Sparkle icon - Placeholder */}
+            {/* Sparkle icon - Chat with Bob */}
             <button
+              onClick={onChatToggle}
               className="text-white hover:text-yellow-400 transition-colors duration-300 p-2"
-              aria-label="AI Features"
+              aria-label="AI Bot"
+              title="Chat with Bob"
             >
               <IoSparkles className="text-xl sm:text-2xl" />
             </button>
@@ -58,8 +61,19 @@ const BottomNavbar = ({ onDiveDeeper }) => {
             <button
               className="text-white hover:text-green-400 transition-colors duration-300 p-2"
               aria-label="Blogs"
+              title="Blogs"
             >
               <FaFileAlt className="text-xl sm:text-2xl" />
+            </button>
+
+            {/* Contact icon - Navigate to Contact */}
+            <button
+              onClick={() => scrollToSection('contact')}
+              className="text-white hover:text-red-400 transition-colors duration-300 p-2"
+              aria-label="Contact Me"
+              title="Contact Me"
+            >
+              <FaEnvelope className="text-xl sm:text-2xl" />
             </button>
             
             {/* Terminal icon - More professional for mystery feature */}
@@ -67,6 +81,7 @@ const BottomNavbar = ({ onDiveDeeper }) => {
               onClick={toggleModal}
               className="text-white hover:text-purple-400 transition-colors duration-300 p-2"
               aria-label="Terminal access"
+              title="Terminal Access"
             >
               <RiTerminalBoxFill className="text-xl sm:text-2xl" />
             </button>

@@ -5,11 +5,13 @@ import Home from './components/Home';
 import SectionToggle from './components/SectionToggle';
 import Contact from './components/Contact';
 import Terminal from './components/Terminal';
+import ChatbotModal from './components/ChatbotModal';
 import './App.css';
 
 function App() {
   const [terminalMode, setTerminalMode] = useState(false);
   const [staticEffect, setStaticEffect] = useState(false);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
   
   // Handle "Dive Deeper" button click
   const handleDiveDeeper = () => {
@@ -27,6 +29,11 @@ function App() {
       setStaticEffect(false);
       setTerminalMode(false);
     }, 2000);
+  };
+
+  // Toggle chatbot modal
+  const toggleChatbot = () => {
+    setChatbotOpen(!chatbotOpen);
   };
 
   return (
@@ -49,12 +56,14 @@ function App() {
         <Terminal exitTerminal={exitTerminal} />
       ) : (
         <div className="content">
-          <BottomNavbar onDiveDeeper={handleDiveDeeper} />
+          <BottomNavbar onDiveDeeper={handleDiveDeeper} onChatToggle={toggleChatbot} />
           <Home />
           <SectionToggle />
           <Contact />
         </div>
       )}
+      
+      <ChatbotModal isOpen={chatbotOpen} onClose={() => setChatbotOpen(false)} />
     </div>
   );
 }
