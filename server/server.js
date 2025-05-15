@@ -38,6 +38,7 @@ app.use((req, res, next) => {
 try {
   app.use('/api/contact', require('./routes/api/contact'));
   app.use('/api/chat', require('./routes/api/chat'));
+  app.use('/api/blogs', require('./routes/api/blogs'));
   console.log('API routes loaded successfully');
 } catch (error) {
   console.error('Failed to load API routes:', error);

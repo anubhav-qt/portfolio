@@ -3,16 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Experience from './Experience';
 import Projects from './Projects';
 import TechStack from './TechStack';
+// Import will be uncommented when blogs feature is ready
+// import Blogs from './Blogs';
 
 const SectionToggle = () => {
   // State to track the active section
   const [activeSection, setActiveSection] = useState('experience');
 
-  // Toggle options
+  // Toggle options - blogs section commented out until fully done
   const toggleOptions = [
     { id: 'experience', label: 'Experience' },
     { id: 'projects', label: 'Projects' },
     { id: 'tech-stack', label: 'Tech Stack' },
+    // { id: 'blogs', label: 'Blogs' }, // Will be uncommented when ready
   ];
 
   return (
@@ -50,6 +53,8 @@ const SectionToggle = () => {
             {activeSection === 'experience' && <Experience hideTitle={true} />}
             {activeSection === 'projects' && <Projects hideTitle={true} />}
             {activeSection === 'tech-stack' && <TechStack hideTitle={true} />}
+            {/* Blogs section will be enabled when the feature is ready */}
+            {/* {activeSection === 'blogs' && <Blogs hideTitle={true} />} */}
           </motion.div>
         </AnimatePresence>
       </div>

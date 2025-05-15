@@ -55,15 +55,6 @@ const BottomNavbar = ({ onDiveDeeper, onChatToggle }) => {
             >
               <FaRobot className="text-xl sm:text-2xl" />
             </button>
-            
-            {/* File/Document icon - Placeholder for Blog */}
-            <button
-              className="text-white hover:text-green-400 transition-colors duration-300 p-2"
-              aria-label="Blogs"
-              title="Blogs"
-            >
-              <FaFileAlt className="text-xl sm:text-2xl" />
-            </button>
 
             {/* Contact icon - Navigate to Contact */}
             <button

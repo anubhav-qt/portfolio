@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoSend, IoClose } from 'react-icons/io5';
 import { FaRobot } from 'react-icons/fa';
 import { MdPerson } from 'react-icons/md';
 
-const ChatbotModal = ({ isOpen, onClose }) => {
+// Wrap the entire component with memo to prevent re-renders when parent components change
+const ChatbotModal = memo(({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -53,8 +54,13 @@ const ChatbotModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Send a message to the API and handle the streaming response
-  const sendMessage = async () => {
+  // Wrap the onClose handler with useCallback to stabilize the function reference
+  const handleClose = useCallback(() => {
+    if (onClose) onClose();
+  }, [onClose]);
+
+  // Wrap sendMessage in useCallback to prevent unnecessary re-creation
+  const sendMessage = useCallback(async () => {
     if (!newMessage.trim()) return;
     
     // Add user message to the chat
@@ -170,22 +176,76 @@ const ChatbotModal = ({ isOpen, onClose }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [messages, newMessage, API_URL]);
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  // Use useCallback to stabilize event handler references
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     sendMessage();
-  };
+  }, [sendMessage]);
 
   // Handle pressing Enter to submit
-  const handleKeyDown = (e) => {
+  const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
-  };
+  }, [sendMessage]);
 
+  // Stabilize the onChange handler for the input field
+  const handleInputChange = useCallback((e) => {
+    setNewMessage(e.target.value);
+  }, []);
+
+  // Create a memoized message list component
+  const MessageList = useCallback(() => {
+    if (messages.length === 0) {
+      return (
+        <div className="text-center text-gray-400 my-8">
+          <FaRobot className="text-4xl mx-auto mb-3 text-yellow-400" />
+          <p>Hi! I'm Bob, an AI assistant for Anubhav's portfolio.</p>
+          <p>Ask me anything about Anubhav's skills, projects, or experience!</p>
+        </div>
+      );
+    }
+    
+    return messages.map((message, index) => (
+      <div
+        key={message.id || index}
+        className={`flex mb-4 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+      >
+        <div
+          className={`max-w-[80%] rounded-lg px-4 py-2 ${
+            message.sender === 'user'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-800 text-white border border-gray-700'
+          }`}
+        >
+          <div className="flex items-center mb-1">
+            {message.sender === 'user' ? (
+              <MdPerson className="mr-1" />
+            ) : (
+              <FaRobot className="mr-1 text-yellow-400" />
+            )}
+            <span className="text-xs text-gray-300">
+              {message.sender === 'user' ? 'You' : 'Bob'}
+            </span>
+          </div>
+          <p>{message.text}</p>
+          {message.loading && (
+            <div className="flex space-x-1 mt-2 justify-center">
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '100ms' }}></div>
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
+            </div>
+          )}
+        </div>
+      </div>
+    ));
+  }, [messages]);
+
+  // Using Portal would be ideal, but since we don't have React DOM imported,
+  // we'll use AnimatePresence with a fixed position modal
   return (
     <AnimatePresence>
       {isOpen && (
@@ -197,7 +257,7 @@ const ChatbotModal = ({ isOpen, onClose }) => {
           transition={{ duration: 0.2 }}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black bg-opacity-70" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black bg-opacity-70" onClick={handleClose}></div>
           
           {/* Modal content */}
           <motion.div
@@ -215,7 +275,7 @@ const ChatbotModal = ({ isOpen, onClose }) => {
               </h2>
               <button
                 className="text-gray-400 hover:text-white"
-                onClick={onClose}
+                onClick={handleClose}
                 aria-label="Close chat"
               >
                 <IoClose className="text-xl" />
@@ -224,47 +284,7 @@ const ChatbotModal = ({ isOpen, onClose }) => {
             
             {/* Messages area */}
             <div className="flex-grow overflow-y-auto p-4 bg-gray-900 bg-opacity-50">
-              {messages.length === 0 ? (
-                <div className="text-center text-gray-400 my-8">
-                  <FaRobot className="text-4xl mx-auto mb-3 text-yellow-400" />
-                  <p>Hi! I'm Bob, an AI assistant for Anubhav's portfolio.</p>
-                  <p>Ask me anything about Anubhav's skills, projects, or experience!</p>
-                </div>
-              ) : (
-                messages.map((message, index) => (
-                  <div
-                    key={message.id || index}
-                    className={`flex mb-4 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                        message.sender === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-800 text-white border border-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center mb-1">
-                        {message.sender === 'user' ? (
-                          <MdPerson className="mr-1" />
-                        ) : (
-                          <FaRobot className="mr-1 text-yellow-400" />
-                        )}
-                        <span className="text-xs text-gray-300">
-                          {message.sender === 'user' ? 'You' : 'Bob'}
-                        </span>
-                      </div>
-                      <p>{message.text}</p>
-                      {message.loading && (
-                        <div className="flex space-x-1 mt-2 justify-center">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '100ms' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
+              <MessageList />
               <div ref={messagesEndRef} />
             </div>
             
@@ -275,7 +295,7 @@ const ChatbotModal = ({ isOpen, onClose }) => {
                   ref={inputRef}
                   type="text"
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask something about Anubhav..."
                   className="flex-grow p-2 bg-black border border-gray-600 rounded-l-md text-white focus:outline-none"
@@ -298,6 +318,9 @@ const ChatbotModal = ({ isOpen, onClose }) => {
       )}
     </AnimatePresence>
   );
-};
+});
+
+// Add a display name for better debugging
+ChatbotModal.displayName = 'ChatbotModal';
 
 export default ChatbotModal;

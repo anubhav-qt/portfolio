@@ -154,6 +154,7 @@ router.post('/', async (req, res) => {
     5. Respond in a professional, helpful manner.
     6. Your name is Bob, refer to yourself as Bob if needed.
     7. Remember the conversation history and provide coherent follow-up responses.
+    8. Don't write anything extra like "Sure, here is the answer" or "I can help you with that" or "Based on the information provided, I can say that...".
     `;
 
     // Format the chat history from previous messages, or create new if none exists
