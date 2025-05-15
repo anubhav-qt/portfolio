@@ -90,8 +90,8 @@ router.get('/test', (req, res) => {
 // @access  Public
 router.post('/', async (req, res) => {
   try {
-    // Get the user's message from the request body
-    const { message } = req.body;
+    // Get the user's message and chat history from the request body
+    const { message, history } = req.body;
     
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -104,24 +104,6 @@ router.post('/', async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    // Create a prompt that uses the knowledge base
-    const prompt = `
-    You are Bob, an AI assistant for Anubhav Joshi's portfolio website. 
-    Use ONLY the following information to answer questions about Anubhav:
-    
-    ${portfolioContext}
-    
-    USER QUERY: ${message}
-    
-    Important instructions:
-    1. Respond ONLY based on the information provided above.
-    2. If you don't know the answer based on the provided information, say "I don't have that information about Anubhav."
-    3. Keep your answer concise (under 100 words).
-    4. DO NOT make up any information that's not in the provided context.
-    5. Respond in a professional, helpful manner.
-    6. Your name is Bob, refer to yourself as Bob if needed.
-    `;
-
     // Initialize Gemini model (using gemini-2.0-flash)
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     
@@ -133,23 +115,110 @@ router.post('/', async (req, res) => {
       maxOutputTokens: 200, // Limit to keep responses concise
     };
     
-    // Start the streaming generation
-    const result = await model.generateContentStream({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    // Create a chat session
+    const chat = model.startChat({
       generationConfig,
+      history: [], // Initialize empty - we'll handle history differently
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+      ],
     });
+    
+    // Create system context message
+    const systemPrompt = `
+    You are Bob, an AI assistant for Anubhav Joshi's portfolio website. 
+    Use ONLY the following information to answer questions about Anubhav:
+    
+    ${portfolioContext}
+    
+    Important instructions:
+    1. Respond ONLY based on the information provided above.
+    2. If you don't know the answer based on the provided information, say "I don't have that information about Anubhav."
+    3. Keep your answer concise (under 100 words).
+    4. DO NOT make up any information that's not in the provided context.
+    5. Respond in a professional, helpful manner.
+    6. Your name is Bob, refer to yourself as Bob if needed.
+    7. Remember the conversation history and provide coherent follow-up responses.
+    `;
 
-    // Stream the response chunks to the client
-    for await (const chunk of result.stream) {
-      const chunkText = chunk.text();
-      if (chunkText) {
-        res.write(`data: ${JSON.stringify({ text: chunkText })}\n\n`);
-      }
+    // Format the chat history from previous messages, or create new if none exists
+    let formattedHistory = [];
+    
+    // Add the system message as the first message
+    formattedHistory.push({
+      role: "user",
+      parts: [{ text: systemPrompt }],
+    });
+    formattedHistory.push({
+      role: "model",
+      parts: [{ text: "I understand. I'm Bob, Anubhav's portfolio assistant. I'll answer questions about Anubhav based solely on the information provided, keeping responses under 100 words." }],
+    });
+    
+    // Add the conversation history if it exists
+    if (history && Array.isArray(history) && history.length > 0) {
+      // Filter out any messages that are empty or don't have content
+      const validHistory = history.filter(msg => 
+        msg && msg.role && (msg.content || "").trim().length > 0
+      );
+      
+      // Add each valid history message to the formatted history
+      validHistory.forEach(msg => {
+        formattedHistory.push({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }],
+        });
+      });
+      
+      console.log(`Added ${validHistory.length} messages from chat history`);
     }
+    
+    // Add the new user message
+    formattedHistory.push({
+      role: "user",
+      parts: [{ text: message }],
+    });
+    
+    try {
+      // Generate content with the full conversation history
+      const result = await model.generateContentStream({
+        contents: formattedHistory,
+        generationConfig,
+      });
 
-    // End the response
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
+      // Stream the response chunks to the client
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        if (chunkText) {
+          res.write(`data: ${JSON.stringify({ text: chunkText })}\n\n`);
+        }
+      }
+
+      // End the response
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+    } catch (generationError) {
+      console.error('Error generating content:', generationError);
+      if (!res.headersSent) {
+        return res.status(500).json({ error: 'Failed to generate content' });
+      }
+      res.write(`data: ${JSON.stringify({ error: 'Error generating your response' })}\n\n`);
+      res.end();
+    }
   } catch (error) {
     console.error('Chat error:', error);
     // If headers not sent yet, send an error response

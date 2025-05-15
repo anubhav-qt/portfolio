@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaInfoCircle, FaFileAlt, FaEnvelope } from 'react-icons/fa';
-import { IoSparkles } from 'react-icons/io5';
+import { FaInfoCircle, FaFileAlt, FaEnvelope, FaRobot } from 'react-icons/fa';
 import { RiTerminalBoxFill } from 'react-icons/ri';
 
 const BottomNavbar = ({ onDiveDeeper, onChatToggle }) => {
@@ -47,14 +46,14 @@ const BottomNavbar = ({ onDiveDeeper, onChatToggle }) => {
               <FaInfoCircle className="text-xl sm:text-2xl" />
             </button>
             
-            {/* Sparkle icon - Chat with Bob */}
+            {/* Robot icon (replacing Sparkle icon) - Chat with Bob */}
             <button
               onClick={onChatToggle}
               className="text-white hover:text-yellow-400 transition-colors duration-300 p-2"
               aria-label="AI Bot"
               title="Chat with Bob"
             >
-              <IoSparkles className="text-xl sm:text-2xl" />
+              <FaRobot className="text-xl sm:text-2xl" />
             </button>
             
             {/* File/Document icon - Placeholder for Blog */}

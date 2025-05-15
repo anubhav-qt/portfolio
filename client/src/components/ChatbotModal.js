@@ -17,6 +17,26 @@ const ChatbotModal = ({ isOpen, onClose }) => {
     ? `https://${window.location.hostname}/api/chat`
     : 'http://localhost:5000/api/chat';
 
+  // Load any existing chat history from session storage on initial render
+  useEffect(() => {
+    const storedMessages = sessionStorage.getItem('chatHistory');
+    if (storedMessages) {
+      try {
+        const parsedMessages = JSON.parse(storedMessages);
+        setMessages(parsedMessages);
+      } catch (error) {
+        console.error('Error parsing stored chat history:', error);
+      }
+    }
+  }, []);
+
+  // Update session storage whenever messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      sessionStorage.setItem('chatHistory', JSON.stringify(messages));
+    }
+  }, [messages]);
+
   // Auto-scroll to the bottom of the chat when messages update
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -53,13 +73,22 @@ const ChatbotModal = ({ isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      // Send request to the API
+      // Format chat history for the API
+      const chatHistory = messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      }));
+      
+      // Send request to the API with the full chat history
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: userMessage.text }),
+        body: JSON.stringify({ 
+          message: userMessage.text,
+          history: chatHistory 
+        }),
       });
 
       // Handle the streaming response
@@ -239,7 +268,7 @@ const ChatbotModal = ({ isOpen, onClose }) => {
               <div ref={messagesEndRef} />
             </div>
             
-            {/* Input area */}
+            {/* Input area with normal gray border restored, but focus highlight removed */}
             <form onSubmit={handleSubmit} className="p-3 border-t border-gray-700">
               <div className="flex">
                 <input
@@ -249,7 +278,7 @@ const ChatbotModal = ({ isOpen, onClose }) => {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask something about Anubhav..."
-                  className="flex-grow p-2 bg-black border border-gray-600 rounded-l-md text-white focus:outline-none focus:ring-1 focus:ring-white"
+                  className="flex-grow p-2 bg-black border border-gray-600 rounded-l-md text-white focus:outline-none"
                   disabled={isLoading}
                 />
                 <button
