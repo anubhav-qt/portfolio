@@ -16,8 +16,8 @@ const Home = () => {
         {/* Name with reduced margin bottom */}
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4">Anubhav Joshi</h1>
         
-        {/* Personal details with icons including AI Engineer */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-4">
+        {/* Personal details with icons - improved mobile layout */}
+        <div className="flex flex-wrap justify-center gap-y-2 gap-x-4 mb-4">
           <div className="flex items-center">
             <FaBriefcase className="mr-2 text-gray-300" />
             <span className="text-gray-300">AI Engineer</span>
