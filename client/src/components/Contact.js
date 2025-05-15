@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 
-const Contact = ({ onDiveDeeper }) => {
+const Contact = () => { // Removed onDiveDeeper prop
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -130,14 +129,7 @@ const Contact = ({ onDiveDeeper }) => {
           </a>
         </div>
         
-        <motion.button
-          onClick={onDiveDeeper}
-          className="px-6 sm:px-8 py-2 sm:py-3 bg-black text-white border-2 border-white rounded-md text-base sm:text-lg font-bold hover:bg-white hover:text-black transition-colors duration-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Dive Deeper
-        </motion.button>
+        {/* Removed the "Dive Deeper" button */}
       </div>
     </section>
   );

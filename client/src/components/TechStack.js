@@ -1,78 +1,273 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-// Tech stack data categorized
-const techData = {
-  "Programming Languages": [
-    "Python",
-    "TypeScript",
-    "Go"
+// Tech skills data - grouped by category
+const techSkills = {
+  "Languages": [
+    "Python", "C++", "C", "TypeScript", "JavaScript", "SQL"
   ],
-  "Libraries & Frameworks": [
-    "Pandas",
-    "NumPy",
-    "MatPlotLib",
-    "Seaborn",
-    "Scikit-Learn",
-    "TensorFlow", 
-    "PyTorch",
-    "Django",
-    "Express",
-    "React",
-    "Node",
-    "Zustand",
-    "Zod",
-    "Next.JS",
-    "Tailwind CSS"
+  "AI/ML": [
+    "Deep Learning", "NLP", "Computer Vision", "Reinforcement Learning", 
+    "Generative AI", "LLMs", "Transformer Architecture", "LLM Orchestration",
+    "TensorFlow", "Keras", "Scikit-learn", "OpenCV", "LangChain", 
+    "Google Agent Development Kit", "Gemini API", "Vector Databases",
+    "Pandas", "NumPy", "Seaborn", "Matplotlib", "Plotly"
+  ],
+  "Software Engineering": [
+    "Full Stack Development", "Microservices", "API Design", "API Integration",
+    "React", "React Native", "Expo", "Next.js", "Node.js", "Express", "Flask",
+    "Docker", "Git", "GitHub", "Linux", "GCP", "Render", "Firebase", "Supabase",
+    "Playwright", "Selenium"
   ],
   "Databases": [
-    "PostgreSQL",
-    "MongoDB",
-    "BigQuery"
-  ],
-  "Tools & Technologies": [
-    "Selenium",
-    "Playwright",
-    "Tableau",
-    "Git",
-    "GitHub",
-    "AWS",
-    "Docker",
-    "Kubernetes",
-    "Firebase",
-    "Google Earth Engine"
+    "BigQuery", "PostgreSQL", "MongoDB", "MySQL"
   ]
 };
 
-const TechStack = () => {
+// Hardcoded positions for the "Show All" view - skills with similarity are positioned closer together
+const skillPositions = {
+  // Languages
+  "Python": { x: 15, y: 15 },
+  "C++": { x: 28, y: 15 },
+  "C": { x: 30, y: 25 },
+  "TypeScript": { x: 18, y: 35 },
+  "JavaScript": { x: 10, y: 38 },
+  "SQL": { x: 24, y: 40 },
+  
+  // AI/ML - clustered on left side
+  "Deep Learning": { x: 20, y: 55 },
+  "NLP": { x: 10, y: 65 },
+  "Computer Vision": { x: 25, y: 65 },
+  "Reinforcement Learning": { x: 15, y: 75 },
+  "Generative AI": { x: 10, y: 80 },
+  "LLMs": { x: 22, y: 72 },
+  "Transformer Architecture": { x: 32, y: 68 },
+  "LLM Orchestration": { x: 30, y: 55 },
+  "TensorFlow": { x: 8, y: 50 },
+  "Keras": { x: 18, y: 47 },
+  "Scikit-learn": { x: 22, y: 82 },
+  "OpenCV": { x: 30, y: 78 },
+  "LangChain": { x: 12, y: 85 },
+  "Google Agent Development Kit": { x: 30, y: 88 },
+  "Gemini API": { x: 24, y: 85 },
+  "Vector Databases": { x: 18, y: 60 },
+  "Pandas": { x: 38, y: 60 },
+  "NumPy": { x: 38, y: 50 },
+  "Seaborn": { x: 35, y: 40 },
+  "Matplotlib": { x: 32, y: 32 },
+  "Plotly": { x: 38, y: 25 },
+  
+  // Software Engineering - clustered on right side
+  "Full Stack Development": { x: 68, y: 15 },
+  "Microservices": { x: 70, y: 28 },
+  "API Design": { x: 60, y: 20 },
+  "API Integration": { x: 58, y: 30 },
+  "React": { x: 72, y: 38 },
+  "React Native": { x: 70, y: 45 },
+  "Expo": { x: 62, y: 42 },
+  "Next.js": { x: 78, y: 40 },
+  "Node.js": { x: 82, y: 25 },
+  "Express": { x: 88, y: 30 },
+  "Flask": { x: 55, y: 40 },
+  "Docker": { x: 65, y: 55 },
+  "Git": { x: 75, y: 60 },
+  "GitHub": { x: 82, y: 58 },
+  "Linux": { x: 60, y: 65 },
+  "GCP": { x: 72, y: 70 },
+  "Render": { x: 65, y: 75 },
+  "Firebase": { x: 58, y: 80 },
+  "Supabase": { x: 68, y: 82 },
+  "Playwright": { x: 80, y: 80 },
+  "Selenium": { x: 85, y: 70 },
+  
+  // Databases - bottom right corner
+  "BigQuery": { x: 88, y: 82 },
+  "PostgreSQL": { x: 78, y: 88 },
+  "MongoDB": { x: 90, y: 88 },
+  "MySQL": { x: 82, y: 85 }
+};
+
+// Generate random positions for when a specific category is selected
+const generateRandomPositions = (skills) => {
+  const positions = {};
+  const usedPositions = [];
+  
+  // Check if a position overlaps with any existing position
+  const checkOverlap = (x, y) => {
+    for (const pos of usedPositions) {
+      const distance = Math.sqrt(Math.pow(pos.x - x, 2) + Math.pow(pos.y - y, 2));
+      if (distance < 12) return true; // Minimum distance between skill centers
+    }
+    return false;
+  };
+  
+  skills.forEach(skill => {
+    let x, y;
+    let attempts = 0;
+    
+    do {
+      // Adjust bounds to ensure skills stay within visible area (8-92% instead of 10-90%)
+      x = 8 + Math.random() * 84; // 8% to 92% of width
+      y = 8 + Math.random() * 84; // 8% to 92% of height
+      attempts++;
+      
+      // If we can't find a non-overlapping position after many attempts, slightly relax constraints
+      if (attempts > 100) break;
+    } while (checkOverlap(x, y));
+    
+    positions[skill] = { x, y };
+    usedPositions.push({ x, y });
+  });
+  
+  return positions;
+};
+
+const TechStack = ({ hideTitle }) => {
+  const [category, setCategory] = useState(null);
+  const [hoveredSkill, setHoveredSkill] = useState(null);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [randomPositions, setRandomPositions] = useState({});
+  
+  // Handle category selection
+  const selectCategory = (cat) => {
+    if (cat === category) {
+      // If clicking the same category again, reset to show all
+      setCategory(null);
+    } else {
+      // Generate random positions when selecting a new category
+      setCategory(cat);
+      setRandomPositions(generateRandomPositions(techSkills[cat] || []));
+    }
+    setHoveredSkill(null);
+    setHoveredCategory(null);
+  };
+  
+  // Get all skills or filtered by category
+  const visibleSkills = category ? techSkills[category] : Object.values(techSkills).flat();
+  
+  // Get position for a skill
+  const getSkillPosition = (skill) => {
+    if (category) {
+      return randomPositions[skill] || { x: 50, y: 50 };
+    } else {
+      return skillPositions[skill] || { x: 50, y: 50 };
+    }
+  };
+
+  // Check if a skill should be highlighted based on category hover
+  const isSkillHighlighted = (skill) => {
+    // If a specific skill is hovered, only highlight that one
+    if (hoveredSkill === skill) return true;
+    
+    // If showing all skills and a category is hovered, highlight all skills in that category
+    if (!category && hoveredCategory && techSkills[hoveredCategory].includes(skill)) {
+      return true;
+    }
+    
+    return false;
+  };
+  
+  return (
+    <div className="w-full">
+      {!hideTitle && (
+        <h2 className="text-4xl font-bold text-center text-white mb-16">Tech Stack</h2>
+      )}
+
+      {/* Skills Map */}
+      <motion.div
+        className="border border-white rounded-lg p-6 overflow-hidden mb-8"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Category filter buttons */}
+        <div className="flex flex-wrap justify-center gap-3 mb-2">
+          {Object.keys(techSkills).map((cat) => (
+            <motion.button
+              key={cat}
+              className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                category === cat 
+                  ? 'bg-white text-black' 
+                  : 'bg-black text-white border border-white hover:bg-gray-900'
+              }`}
+              onClick={() => selectCategory(cat)}
+              onMouseEnter={() => !category && setHoveredCategory(cat)}
+              onMouseLeave={() => !category && setHoveredCategory(null)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {cat}
+            </motion.button>
+          ))}
+          {category && (
+            <motion.button
+              className="px-4 py-2 rounded-full text-sm bg-black text-white border border-white hover:bg-gray-900"
+              onClick={() => setCategory(null)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Show All
+            </motion.button>
+          )}
+        </div>
+
+        {/* Instruction text - show different instruction based on view mode */}
+        <div className="text-center text-xs text-gray-400 mb-4">
+          {!category 
+            ? "Hover the category to highlight skills in the same cluster | Click buttons to filter by category" 
+            : "Click buttons to filter by category"}
+        </div>
+        
+        <div className="relative w-full h-[500px] bg-black overflow-hidden border border-gray-800 rounded-lg">
+          {/* Skills */}
+          <div className="absolute inset-0">
+            {visibleSkills.map((skill) => {
+              const position = getSkillPosition(skill);
+              const highlighted = isSkillHighlighted(skill);
+              
+              return (
+                <motion.div
+                  key={skill}
+                  className={`absolute px-3 py-1.5 rounded-md border transition-all duration-300 ${
+                    highlighted 
+                      ? 'bg-white text-black border-white z-20' 
+                      : 'bg-black text-white border-gray-700'
+                  }`}
+                  style={{
+                    left: `${position.x}%`,
+                    top: `${position.y}%`,
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ 
+                    opacity: highlighted ? 1 : (hoveredCategory && !techSkills[hoveredCategory].includes(skill) ? 0.3 : 1), 
+                    scale: highlighted ? 1.2 : 1,
+                    zIndex: highlighted ? 10 : 1
+                  }}
+                  transition={{ duration: 0.3 }}
+                  onMouseEnter={() => setHoveredSkill(skill)}
+                  onMouseLeave={() => setHoveredSkill(null)}
+                >
+                  <span className="whitespace-nowrap text-xs">
+                    {skill}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+// For standalone section rendering
+export const TechStackSection = () => {
   return (
     <section id="tech-stack" className="min-h-screen py-20 bg-black">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center text-white mb-16">Tech Stack</h2>
-        
-        <div className="space-y-16">
-          {Object.entries(techData).map(([category, technologies]) => (
-            <div key={category} className="mb-12">
-              <h3 className="text-2xl font-bold text-center text-white mb-8">{category}</h3>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                {technologies.map((tech, index) => (
-                  <motion.div
-                    key={tech}
-                    className="flex items-center justify-center p-4 border border-gray-700 rounded-lg bg-black hover:bg-gray-900 transition-colors duration-300"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.05, duration: 0.5 }}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    <p className="text-white text-center font-medium">{tech}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <TechStack />
       </div>
     </section>
   );

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navbar from './components/Navbar';
+import BottomNavbar from './components/BottomNavbar';
 import Home from './components/Home';
-import Experience from './components/Experience';
-import Projects from './components/Projects';
-import TechStack from './components/TechStack';
+import SectionToggle from './components/SectionToggle';
 import Contact from './components/Contact';
 import Terminal from './components/Terminal';
 import './App.css';
@@ -51,12 +49,10 @@ function App() {
         <Terminal exitTerminal={exitTerminal} />
       ) : (
         <div className="content">
-          <Navbar />
+          <BottomNavbar onDiveDeeper={handleDiveDeeper} />
           <Home />
-          <Experience />
-          <Projects />
-          <TechStack />
-          <Contact onDiveDeeper={handleDiveDeeper} />
+          <SectionToggle />
+          <Contact />
         </div>
       )}
     </div>

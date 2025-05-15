@@ -50,3 +50,18 @@ body {
   height: 5px;
   margin: 15px 0;
 }
+
+/* Adjust vertical spacing based on screen sizes */
+@media (min-height: 900px) {
+  .home-adjust {
+    padding-top: 0;
+    margin-top: -5vh; /* Shift content up on larger screens */
+  }
+}
+
+/* Ensure experience section starts below viewport on larger screens */
+@media (min-height: 900px) {
+  #experience {
+    margin-top: 25vh;
+  }
+}
